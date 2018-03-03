@@ -18,36 +18,31 @@ func (b *Bot) GlobalRadio() {
 	}
 }
 
+// Trigger to play radio.
 func (b *Bot) Radio(url string, v *VoiceInstance) {
 	v.audioMutex.Lock()
 	defer v.audioMutex.Unlock()
 
 	if b.config.DiscordPlayStatus {
-		b.dg.UpdateStatus(0, "Radio")
+		b.dg.UpdateStatus(0, v.station.Name)
 	}
 
-	v.radioFlag = true
-	v.stop = false
-	v.speaking = true
-	v.pause = false
+	log.Println("INFO: Playing URL ", url)
+
 	v.voice.Speaking(true)
 
 	v.DCA(url)
 
 	b.dg.UpdateStatus(0, b.config.DiscordStatus)
 
-	v.radioFlag = false
-	v.stop = false
-	v.speaking = false
 	v.voice.Speaking(false)
 }
 
-// DCA
+// Connector to the DCA audio playback library
 func (v *VoiceInstance) DCA(url string) {
 	opts := dca.StdEncodeOptions
 	opts.RawOutput = true
 	opts.Bitrate = 96
-	opts.Application = "lowdelay"
 
 	encodeSession, err := dca.EncodeFile(url, opts)
 	if err != nil {
@@ -63,46 +58,17 @@ func (v *VoiceInstance) DCA(url string) {
 			if err != nil && err != io.EOF {
 				log.Println("FATA: An error occured", err)
 			}
-			// Clean up incase something happened and ffmpeg is still running
+
+			// Clean up in case something happened and ffmpeg is still running
 			encodeSession.Cleanup()
 			return
 		}
 	}
 }
 
-// Stop stop the audio
+// Stop the audio
 func (v *VoiceInstance) Stop() {
-	v.stop = true
 	if v.encoder != nil {
 		v.encoder.Cleanup()
-	}
-}
-
-func (v *VoiceInstance) Skip() bool {
-	if v.speaking {
-		if v.pause {
-			return true
-		} else {
-			if v.encoder != nil {
-				v.encoder.Cleanup()
-			}
-		}
-	}
-	return false
-}
-
-// Pause pause the audio
-func (v *VoiceInstance) Pause() {
-	v.pause = true
-	if v.stream != nil {
-		v.stream.SetPaused(true)
-	}
-}
-
-// Resume resume the audio
-func (v *VoiceInstance) Resume() {
-	v.pause = false
-	if v.stream != nil {
-		v.stream.SetPaused(false)
 	}
 }

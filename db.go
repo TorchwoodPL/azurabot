@@ -10,7 +10,6 @@ func OpenDB() (*bolt.DB, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer db.Close()
 
 	return db, nil
 }
@@ -21,6 +20,7 @@ func CreateDB() error {
 	if err != nil {
 		return err
 	}
+	defer db.Close()
 
 	err = db.Update(func(tx *bolt.Tx) error {
 		_, err := tx.CreateBucketIfNotExists([]byte("ChannelDB"))
@@ -38,6 +38,7 @@ func PutDB(channelID, ignored string) error {
 	if err != nil {
 		return err
 	}
+	defer db.Close()
 
 	db.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte("ChannelDB"))
@@ -55,6 +56,7 @@ func GetDB(channelID string) string {
 	if err != nil {
 		return ""
 	}
+	defer db.Close()
 
 	db.View(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte("ChannelDB"))

@@ -174,20 +174,20 @@ func (b *Bot) MessageCreateHandler(s *discordgo.Session, m *discordgo.MessageCre
 	}
 
 	switch command[0] {
-	case "help":
-		b.HelpReporter(m)
-	case "join":
-		b.JoinReporter(v, m, s)
-	case "leave":
-		b.LeaveReporter(v, m)
-	case "play":
-		b.PlayReporter(v, m)
-	case "stop":
-		b.StopReporter(v, m)
-	case "np":
-		// TODO
-		return
-	default:
-		return
+		case "help":
+			b.HelpReporter(m)
+		case "join":
+			b.JoinReporter(v, m, s)
+		case "leave":
+			b.LeaveReporter(v, m)
+		case "play":
+			b.PlayReporter(v, m)
+		case "stop":
+			b.StopReporter(v, m)
+		case "np":
+			b.NowPlayingReporter(v, m)
+			return
+		default:
+			return
 	}
 }

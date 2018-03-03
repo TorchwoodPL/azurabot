@@ -16,6 +16,7 @@ type Bot struct {
 	purgeQueue     []PurgeMessage
 	mutex          sync.Mutex
 	radioSignal    chan PkgRadio
+	azuracast      AzuraCast
 }
 
 type Options struct {
@@ -52,9 +53,7 @@ type VoiceInstance struct {
 	recv       []int16
 	guildID    string
 	channelID  string
-	speaking   bool
-	pause      bool
-	stop       bool
-	skip       bool
-	radioFlag  bool
+	is_playing bool
+	station    *AzuraCastStation
+	np         *AzuraCastNowPlaying
 }

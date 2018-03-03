@@ -21,6 +21,9 @@ func main() {
 
 	bot := &Bot{
 		config:         options,
+		azuracast:      AzuraCast{
+			base_url: options.AzuracastUrl,
+		},
 		voiceInstances: map[string]*VoiceInstance{},
 	}
 

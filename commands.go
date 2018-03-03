@@ -47,7 +47,7 @@ func (b *Bot) JoinReporter(v *VoiceInstance, m *discordgo.MessageCreate, s *disc
 	}
 
 	var err error
-	v.voice, err = b.dg.ChannelVoiceJoin(v.guildID, voiceChannelID, false, false)
+	v.voice, err = b.dg.ChannelVoiceJoin(v.guildID, voiceChannelID, false, true)
 
 	if err != nil {
 		v.Stop()
@@ -84,7 +84,7 @@ func (b *Bot) LeaveReporter(v *VoiceInstance, m *discordgo.MessageCreate) {
 }
 
 func (b *Bot) PlayReporter(v *VoiceInstance, m *discordgo.MessageCreate) {
-	log.Println("INFO:", m.Author.Username, "sent command 'radio'")
+	log.Println("INFO:", m.Author.Username, "sent command 'play'")
 
 	if v == nil {
 		log.Println("INFO: The bot is not in a voice channel.")
@@ -92,18 +92,28 @@ func (b *Bot) PlayReporter(v *VoiceInstance, m *discordgo.MessageCreate) {
 		return
 	}
 
-	if len(strings.Fields(m.Content)) < 2 {
-		b.ChMessageSend(m.ChannelID, "You must specify a station ID number or shortcode.")
+	if len(strings.Fields(m.Content)) > 1 {
+		err := b.azuracast.GetNowPlaying(v, strings.Fields(m.Content)[1])
+		if err != nil {
+			b.ChMessageSend(m.ChannelID, "Error: Could not retrieve station information.")
+			log.Println("ERROR: AzuraCast API call returned", err.Error())
+			return
+		}
+	} else if v.station == nil {
+		b.ChMessageSend(m.ChannelID, "You must specify a station ID number or shortcode after the command the first time you play.")
 		return
 	}
 
-	radio := PkgRadio{"", v}
-	radio.data = strings.Fields(m.Content)[1]
+	radio := PkgRadio{
+		data: v.station.ListenURL,
+		v:    v,
+	}
+
 	go func() {
 		b.radioSignal <- radio
 	}()
 
-	b.ChMessageSend(m.ChannelID, "Starting playback of radio!")
+	b.ChMessageSend(m.ChannelID, "Starting playback of "+v.station.Name+"!")
 }
 
 // StopReporter
@@ -120,4 +130,24 @@ func (b *Bot) StopReporter(v *VoiceInstance, m *discordgo.MessageCreate) {
 
 	log.Println("INFO: The bot stopped playing audio")
 	b.ChMessageSend(m.ChannelID, "Stopping radio playback...")
+}
+
+// Return Now Playing information
+func (b *Bot) NowPlayingReporter(v *VoiceInstance, m *discordgo.MessageCreate) {
+	log.Println("INFO:", m.Author.Username, "sent command 'np'")
+
+	if v == nil {
+		log.Println("INFO: The bot is not in a voice channel.")
+		b.ChMessageSend(m.ChannelID, "The bot is not currently active.")
+		return
+	}
+
+	err := b.azuracast.UpdateNowPlaying(v)
+	if err != nil {
+		b.ChMessageSend(m.ChannelID, "Error: Could not retrieve now playing information.")
+		log.Println("ERROR: AzuraCast API call returned", err.Error())
+		return
+	}
+
+	b.ChMessageSend(m.ChannelID, "**Now Playing on "+v.station.Name+":** "+v.np.Title+" by "+v.np.Artist)
 }
