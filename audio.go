@@ -7,118 +7,25 @@ import (
   "github.com/jonas747/dca"
 )
 
-const (
-  channels    int = 2         // 1 for mono, 2 for stereo
-  frameRate   int = 48000     // audio sampling rate
-  frameSize   int = 960       // uint16 size of each audio frame 960/48KHz = 20ms
-  bufferSize  int = 1024      // max size of opus data 1K
-)
-
-/*
-func (v *VoiceInstance) InitVoice() {
-  v.songSig = make(chan PkgSong)
-  v.radioSig = make(chan PkgRadio)
-  v.endSig = make(chan bool)
-  v.speaking = false
-  go v.Play(v.songSig, v.radioSig, v.endSig)
-}
-*/
-/*
-func (v *VoiceInstance) Play(songSig chan Song, radioSig chan string, endSig chan bool) {
+func (b *Bot) GlobalRadio() {
   for {
     select {
-      case song := <-songSig:
-        if v.radioFlag {
-          v.Stop()
-          time.Sleep(200 * time.Millisecond)
-        }
-        go v.PlayQueue(song)
-      case radio := <-radioSig:
-        v.Stop()
-        time.Sleep(200 * time.Millisecond)  
-        go v.Radio(radio)
-      case <-endSig:
-        v.Stop()
-        return
-        //time.Sleep(200 * time.Millisecond)
-    }
-  }
-}
-*/
-
-func GlobalPlay(songSig chan PkgSong) {
-  for {
-    select {
-      case song := <-songSig:
-        if song.v.radioFlag {
-          song.v.Stop()
-          time.Sleep(200 * time.Millisecond)
-        }
-        go song.v.PlayQueue(song.data)
-    }
-  }
-}
-
-func GlobalRadio(radioSig chan PkgRadio) {
-  for {
-    select {
-      case radio := <-radioSig:
+      case radio := <-b.radioSignal:
         radio.v.Stop()
         time.Sleep(200 * time.Millisecond)  
-        go radio.v.Radio(radio.data)
+        go b.Radio(radio.data, radio.v)
     }
   }
 }
 
-func (v *VoiceInstance) PlayQueue(song Song) {
-  // add song to queue
-  v.QueueAdd(song)
-  if v.speaking {
-    // the bot is playing
-    return
-  }
-  go func() {
-    v.audioMutex.Lock()
-    defer v.audioMutex.Unlock()
-    for {
-      if len(v.queue) == 0 {
-        dg.UpdateStatus(0, o.DiscordStatus)
-        ChMessageSend(v.nowPlaying.ChannelID, "[**Music**] End of queue!")
-        return
-      }
-      v.nowPlaying = v.QueueGetSong()
-      go ChMessageSend(v.nowPlaying.ChannelID, "[**Music**] Playing, **`" + 
-        v.nowPlaying.Title + "`  -  `("+ v.nowPlaying.Duration +")`  -  **<@"+v.nowPlaying.ID+">\n")//*`"+ v.nowPlaying.User +"`***")
-      // If monoserver
-      if o.DiscordPlayStatus {
-        dg.UpdateStatus(0, v.nowPlaying.Title)
-      }
-      v.stop = false
-      v.skip = false
-      v.speaking = true
-      v.pause = false
-      v.voice.Speaking(true)
-
-      v.DCA(v.nowPlaying.VideoURL)
-
-      v.QueueRemoveFisrt()
-      if v.stop {
-        v.QueueRemove()
-      }
-      v.stop = false
-      v.skip = false
-      v.speaking = false
-      v.voice.Speaking(false)
-    }
-  }()
-}
-
-func (v *VoiceInstance) Radio(url string) {
+func (b *Bot) Radio(url string, v *VoiceInstance) {
   v.audioMutex.Lock()
   defer v.audioMutex.Unlock()
-  if o.DiscordPlayStatus {
-    dg.UpdateStatus(0, "Radio")
+
+  if b.config.DiscordPlayStatus {
+    b.dg.UpdateStatus(0, "Radio")
   }
+
   v.radioFlag = true
   v.stop = false
   v.speaking = true
@@ -127,7 +34,8 @@ func (v *VoiceInstance) Radio(url string) {
   
   v.DCA(url)
 
-  dg.UpdateStatus(0, o.DiscordStatus)
+  b.dg.UpdateStatus(0, b.config.DiscordStatus)
+
   v.radioFlag = false
   v.stop = false
   v.speaking = false

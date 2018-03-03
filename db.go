@@ -5,13 +5,22 @@ import (
   "github.com/boltdb/bolt"
 )
 
+func OpenDB() (*bolt.DB, error) {
+  db, err := bolt.Open("azurabot.db", 0600, &bolt.Options{Timeout: 1 * time.Second})
+  if err != nil {
+    return nil, err
+  }
+  defer db.Close()
+
+  return db, nil
+}
+
 // CreateDB create a database file if it if was not exist
 func CreateDB() error {
-  db, err := bolt.Open("MusicBot.db", 0600, &bolt.Options{Timeout: 1 * time.Second})
+  db,err := OpenDB()
   if err != nil {
     return err
   }
-  defer db.Close()
 
   err = db.Update(func(tx *bolt.Tx) error {
     _, err := tx.CreateBucketIfNotExists([]byte("ChannelDB"))
@@ -25,11 +34,10 @@ func CreateDB() error {
 
 // PutDB ignore o unignore a test channel
 func PutDB(channelID, ignored string) error {
-  db, err := bolt.Open("MusicBot.db", 0600, &bolt.Options{Timeout: 1 * time.Second})
+  db,err := OpenDB()
   if err != nil {
     return err
   }
-  defer db.Close()
 
   db.Update(func(tx *bolt.Tx) error {
     b := tx.Bucket([]byte("ChannelDB"))
@@ -42,11 +50,11 @@ func PutDB(channelID, ignored string) error {
 // GetDB read if a text channel is ignored
 func GetDB(channelID string) string {
   var v []byte
-  db, err := bolt.Open("MusicBot.db", 0600, &bolt.Options{ReadOnly: true})
+
+  db,err := OpenDB()
   if err != nil {
     return ""
   }
-  defer db.Close()
 
   db.View(func(tx *bolt.Tx) error {
     b := tx.Bucket([]byte("ChannelDB"))

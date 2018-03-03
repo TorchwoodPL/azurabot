@@ -1,12 +1,15 @@
 FROM golang:alpine
-MAINTAINER Leonardo Javier Gago <ljgago@gmail.com>
 
-RUN apk update && apk add git ffmpeg ca-certificates && update-ca-certificates
+MAINTAINER Buster "Silver Eagle" Neece <buster@busterneece.com>
 
-RUN CGO_ENABLED=0 go get github.com/ljgago/MusicBot
+RUN apk update \
+ && apk add git ffmpeg ca-certificates \
+ && update-ca-certificates
 
-RUN mkdir /bot
+WORKDIR /go/src/app
+COPY . .
 
-WORKDIR /bot
+RUN CGO_ENABLED=0 go get -d -v ./...
+RUN CGO_ENABLED=0 go install -v ./...
 
 CMD ["MusicBot", "-f", "bot.toml"]
