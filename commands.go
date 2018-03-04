@@ -5,6 +5,8 @@ import (
 	"log"
 	"strings"
 	"time"
+	"strconv"
+	"math"
 )
 
 func (b *Bot) HelpReporter(m *discordgo.MessageCreate) {
@@ -13,9 +15,10 @@ func (b *Bot) HelpReporter(m *discordgo.MessageCreate) {
 		"**`" + b.config.DiscordPrefix + "help`** ->  show help commands.\n" +
 		"**`" + b.config.DiscordPrefix + "join`** ->  join a voice channel.\n" +
 		"**`" + b.config.DiscordPrefix + "leave`** ->  leave a voice channel.\n" +
-		"**`" + b.config.DiscordPrefix + "play station_short_name`** ->  play the specified station.\n" +
+		"**`" + b.config.DiscordPrefix + "play [station_short_name]`** ->  play the specified station.\n" +
 		"**`" + b.config.DiscordPrefix + "stop`**  ->  stop the player.\n" +
-		// "**`" + b.config.DiscordPrefix + "np`**  ->  show what's now playing.\n" +
+		"**`" + b.config.DiscordPrefix + "np`**  ->  show what's now playing.\n" +
+		"**`" + b.config.DiscordPrefix + "vol [1-100]`**  -> set the player volume.\n" +
 		"```go\n`Owner Commands List`\n```\n" +
 		"**`" + b.config.DiscordPrefix + "ignore`**  ->  ignore commands of a channel.\n" +
 		"**`" + b.config.DiscordPrefix + "unignore`**  ->  unignore commands of a channel.\n"
@@ -150,4 +153,51 @@ func (b *Bot) NowPlayingReporter(v *VoiceInstance, m *discordgo.MessageCreate) {
 	}
 
 	b.ChMessageSend(m.ChannelID, "**Now Playing on "+v.station.Name+":** "+v.np.Title+" by "+v.np.Artist)
+}
+
+func (b *Bot) VolumeReporter(v *VoiceInstance, m *discordgo.MessageCreate) {
+	log.Println("INFO:", m.Author.Username, "sent command 'vol'")
+
+	if v == nil {
+		log.Println("INFO: The bot is not in a voice channel.")
+		b.ChMessageSend(m.ChannelID, "Join a voice channel before setting the volume.")
+		return
+	}
+
+	if len(strings.Fields(m.Content)) > 1 {
+		volPercent, err := strconv.Atoi(strings.Fields(m.Content)[1])
+
+		if volPercent > 100 {
+			volPercent = 100
+		} else if volPercent < 1 {
+			volPercent = 1
+		}
+
+		if err != nil {
+			b.ChMessageSend(m.ChannelID, "Error: Could not set volume.")
+			log.Println("ERROR: Volume parse error", err.Error())
+		}
+
+		v.volume = int(math.Ceil(float64(volPercent) * 255.0/100.0))
+
+		log.Println("INFO: Volume set to ", v.volume, " from user input ", volPercent)
+
+		b.ChMessageSend(m.ChannelID, "Volume updated to "+strconv.Itoa(volPercent)+"%.")
+	} else {
+		v.volume = 0
+		b.ChMessageSend(m.ChannelID, "Volume reset to default.")
+	}
+
+	if v.is_playing && v.station != nil {
+		radio := PkgRadio{
+			data: v.station.ListenURL,
+			v:    v,
+		}
+
+		go func() {
+			b.radioSignal <- radio
+		}()
+	}
+
+
 }

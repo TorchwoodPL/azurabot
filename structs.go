@@ -25,6 +25,7 @@ type Options struct {
 	DiscordPrefix     string `env:"DISCORD_PREFIX,default=!"`
 	DiscordPurgeTime  int64  `env:"DISCORD_PURGETIME,default=60"`
 	DiscordPlayStatus bool   `env:"DISCORD_PLAYSTATUS,default=true"`
+	DiscordVolume     int	 `env:"DISCORD_VOLUME,default=100"`
 	AzuracastUrl      string `env:"AZURACAST_URL,default=http://nginx"`
 }
 
@@ -53,6 +54,7 @@ type VoiceInstance struct {
 	recv       []int16
 	guildID    string
 	channelID  string
+	volume	   int
 	is_playing bool
 	station    *AzuraCastStation
 	np         *AzuraCastNowPlaying

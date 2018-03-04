@@ -31,7 +31,11 @@ func (b *Bot) Radio(url string, v *VoiceInstance) {
 
 	v.voice.Speaking(true)
 
-	v.DCA(url)
+	v.is_playing = true
+
+	b.DCA(v, url)
+
+	v.is_playing = false
 
 	b.dg.UpdateStatus(0, b.config.DiscordStatus)
 
@@ -39,15 +43,22 @@ func (b *Bot) Radio(url string, v *VoiceInstance) {
 }
 
 // Connector to the DCA audio playback library
-func (v *VoiceInstance) DCA(url string) {
+func (b *Bot) DCA(v *VoiceInstance, url string) {
 	opts := dca.StdEncodeOptions
 	opts.RawOutput = true
 	opts.Bitrate = 96
+
+	if v.volume != 0 {
+		opts.Volume = v.volume
+	} else {
+		opts.Volume = b.config.DiscordVolume
+	}
 
 	encodeSession, err := dca.EncodeFile(url, opts)
 	if err != nil {
 		log.Println("FATA: Failed creating an encoding session: ", err)
 	}
+
 	v.encoder = encodeSession
 	done := make(chan error)
 	stream := dca.NewStream(encodeSession, v.voice, done)
@@ -68,6 +79,7 @@ func (v *VoiceInstance) DCA(url string) {
 
 // Stop the audio
 func (v *VoiceInstance) Stop() {
+	v.is_playing = false
 	if v.encoder != nil {
 		v.encoder.Cleanup()
 	}

@@ -186,7 +186,8 @@ func (b *Bot) MessageCreateHandler(s *discordgo.Session, m *discordgo.MessageCre
 			b.StopReporter(v, m)
 		case "np":
 			b.NowPlayingReporter(v, m)
-			return
+		case "vol":
+			b.VolumeReporter(v, m)
 		default:
 			return
 	}

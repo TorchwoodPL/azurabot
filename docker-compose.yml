@@ -1,0 +1,20 @@
+version: '2'
+
+services:
+  bot:
+    image: azuracast/azurabot:latest
+    build:
+      context: .
+    environment:
+      # Discord token - REQUIRED!
+      # Follow instructions from
+      #   https://github.com/reactiflux/discord-irc/wiki/Creating-a-discord-bot-&-getting-a-token
+      DISCORD_TOKEN: ""
+
+      DISCORD_STATUS: "Ready to play!"      # Default status if nothing is playing
+      DISCORD_PREFIX: "!"                   # Prefix to use for commands
+      DISCORD_PURGETIME: "60"               # Seconds after which to purge old bot messages
+      DISCORD_VOLUME: "50"                  # Default volume when playing stations (1-255)
+      DISCORD_PLAYSTATUS: "true"            # Update the bot's status on Discord every time the song changes
+      AZURACAST_URL: "http://nginx"         # Base URL of the AzuraCast installation.
+    restart: always
