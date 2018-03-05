@@ -3,8 +3,6 @@ version: '2'
 services:
   bot:
     image: azuracast/azurabot:latest
-    build:
-      context: .
     environment:
       # Discord token - REQUIRED!
       # Follow instructions from
@@ -13,8 +11,8 @@ services:
 
       DISCORD_STATUS: "Ready to play!"      # Default status if nothing is playing
       DISCORD_PREFIX: "!"                   # Prefix to use for commands
-      DISCORD_PURGETIME: "60"               # Seconds after which to purge old bot messages
+      DISCORD_PURGETIME: "60"               # Seconds after which to purge old bot messages (0 is off)
       DISCORD_VOLUME: "50"                  # Default volume when playing stations (1-255)
-      DISCORD_PLAYSTATUS: "true"            # Update the bot's status on Discord every time the song changes
-      AZURACAST_URL: "http://demo.azuracast.com" # Base URL of the AzuraCast installation.
+      DISCORD_PLAYSTATUS: "true"            # Update the bot's status on Discord to the playing station
+      AZURACAST_URL: "http://demo.azuracast.com" # Base URL of your AzuraCast installation.
     restart: always
