@@ -28,7 +28,7 @@ Choose where on the host computer you would like AzuraBot's configuration file t
 Inside that directory, run this command to pull the Docker Compose configuration file.
 
 ```bash
-curl -L https://raw.githubusercontent.com/AzuraCast/azurabot/master/docker-compose.sample.yml > docker-compose.yml
+curl -L https://raw.githubusercontent.com/TorchwoodPL/azurabot/master/docker-compose.sample.yml > docker-compose.yml
 ```
 
 #### Step 3: Customize docker-compose.yml
