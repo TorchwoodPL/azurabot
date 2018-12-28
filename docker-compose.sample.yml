@@ -2,7 +2,7 @@ version: '2'
 
 services:
   bot:
-    image: azuracast/azurabot:latest
+    image: torchwoodpl/azurabot:latest
     environment:
       # Discord token - REQUIRED!
       # Follow instructions from
