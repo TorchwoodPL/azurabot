@@ -11,7 +11,7 @@ import (
 func (b *Bot) DiscordConnect() (err error) {
 	b.dg, err = discordgo.New("Bot " + b.config.DiscordToken)
 	if err != nil {
-		log.Println("FATA: error creating Discord session,", err)
+		log.Println("FATAL: błąd tworzenia sesji Discord,", err)
 		return
 	}
 
@@ -24,18 +24,18 @@ func (b *Bot) DiscordConnect() (err error) {
 	// Open Websocket
 	err = b.dg.Open()
 	if err != nil {
-		log.Println("FATA: Error Open():", err)
+		log.Println("FATAL: Error Open():", err)
 		return
 	}
 
 	// Get current user (testing for successful login)
 	_, err = b.dg.User("@me")
 	if err != nil {
-		log.Println("FATA:", err)
+		log.Println("FATAL:", err)
 		return
 	}
 
-	log.Println("INFO: Bot is now running. Press CTRL-C to exit.")
+	log.Println("INFO: Bot uruchomiony. Naciśnij CTRL-C aby wyłączyć.")
 
 	b.purgeRoutine()
 	b.initRoutine()
@@ -110,18 +110,18 @@ func (b *Bot) initRoutine() {
 
 // ConnectHandler
 func (b *Bot) ConnectHandler(s *discordgo.Session, connect *discordgo.Connect) {
-	log.Println("INFO: Connected!!")
+	log.Println("INFO: Połączony!!")
 	s.UpdateStatus(0, b.config.DiscordStatus)
 }
 
 // GuildCreateHandler
 func (b *Bot) GuildCreateHandler(s *discordgo.Session, guild *discordgo.GuildCreate) {
-	log.Println("INFO: Guild Create:", guild.ID)
+	log.Println("INFO: Gildia utworzona:", guild.ID)
 }
 
 // GuildDeleteHandler
 func (b *Bot) GuildDeleteHandler(s *discordgo.Session, guild *discordgo.GuildDelete) {
-	log.Println("INFO: Guild Delete:", guild.ID)
+	log.Println("INFO: Gildia stasowana:", guild.ID)
 	v := b.voiceInstances[guild.ID]
 	if v != nil {
 		v.Stop()
@@ -153,17 +153,17 @@ func (b *Bot) MessageCreateHandler(s *discordgo.Session, m *discordgo.MessageCre
 		if strings.HasPrefix(command[0], "ignore") {
 			err := PutDB(m.ChannelID, "true")
 			if err == nil {
-				b.ChMessageSend(m.ChannelID, "[**Music**] `Ignoring` comands in this channel!")
+				b.ChMessageSend(m.ChannelID, "Ignoruję komendy na tym kanale!")
 			} else {
-				log.Println("FATA: Error writing in DB,", err)
+				log.Println("FATAL: Błąd zapisu w DB,", err)
 			}
 		}
 		if strings.HasPrefix(command[0], "unignore") {
 			err := PutDB(m.ChannelID, "false")
 			if err == nil {
-				b.ChMessageSend(m.ChannelID, "[**Music**] `Unignoring` comands in this channel!")
+				b.ChMessageSend(m.ChannelID, "Przestaję ignorować komendy na tym kanale!")
 			} else {
-				log.Println("FATA: Error writing in DB,", err)
+				log.Println("FATAL: Błąd zapisu w DB,", err)
 			}
 		}
 	}

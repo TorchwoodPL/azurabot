@@ -47,7 +47,7 @@ func (ac *AzuraCast) GetNowPlaying(v *VoiceInstance, stationName string) (error)
 
 	resp, err := http.Get(apiUrl)
 	if err != nil {
-		log.Println("ERROR: AzuraCast Response", err.Error())
+		log.Println("ERROR: Odpowiedź AzuraCast", err.Error())
 		return err
 	}
 
@@ -61,6 +61,6 @@ func (ac *AzuraCast) GetNowPlaying(v *VoiceInstance, stationName string) (error)
 		v.np = apiResponse.NowPlaying.Song
 		return nil
 	} else {
-		return errors.New("API Url returned status"+resp.Status)
+		return errors.New("API URL zwrócił status"+resp.Status)
 	}
 }

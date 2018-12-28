@@ -10,7 +10,7 @@ import (
 func main() {
 	runtime.GOMAXPROCS(1)
 
-	log.Println("INFO: Initializing...")
+	log.Println("INFO: Inicjalizacja...")
 
 	var options Options
 	err := envdecode.Decode(&options)

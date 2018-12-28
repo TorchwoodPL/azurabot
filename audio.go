@@ -27,7 +27,7 @@ func (b *Bot) Radio(url string, v *VoiceInstance) {
 		b.dg.UpdateStatus(0, v.station.Name)
 	}
 
-	log.Println("INFO: Playing URL ", url)
+	log.Println("INFO: Odgrywam URL ", url)
 
 	v.voice.Speaking(true)
 
@@ -56,7 +56,7 @@ func (b *Bot) DCA(v *VoiceInstance, url string) {
 
 	encodeSession, err := dca.EncodeFile(url, opts)
 	if err != nil {
-		log.Println("FATA: Failed creating an encoding session: ", err)
+		log.Println("FATA: Błąd inicjalizacji sesji enkodera: ", err)
 	}
 
 	v.encoder = encodeSession
@@ -67,7 +67,7 @@ func (b *Bot) DCA(v *VoiceInstance, url string) {
 		select {
 		case err := <-done:
 			if err != nil && err != io.EOF {
-				log.Println("FATA: An error occured", err)
+				log.Println("FATA: Wystąpił błąd", err)
 			}
 
 			// Clean up in case something happened and ffmpeg is still running
